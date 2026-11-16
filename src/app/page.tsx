@@ -1,99 +1,71 @@
-"use client";
+import Link from "next/link";
 
-import { useChat } from "@ai-sdk/react";
-import { useState } from "react";
-
-const SUGGESTIONS = [
-  "We have 24h, 3 people, and want to build a voice agent for elderly people. Score this idea.",
-  "Plan our 36-hour hackathon hour by hour.",
-  "Write a pitch outline for 'DocuChat': chat with your course PDFs.",
+const FEATURES = [
+  { title: "Registre national en direct", text: "Plus de 30 millions d'entreprises françaises via l'API officielle Recherche d'entreprises : NAF, effectifs, comptes publiés, dirigeants." },
+  { title: "Score de cessibilité explicable", text: "Âge du dirigeant, gouvernance, maturité, rentabilité, croissance : chaque point du score vient d'un signal visible." },
+  { title: "Fiche cible & approche par IA", text: "Une fiche cible, des questions pour le premier call et un email d'approche, rédigés en un clic à partir des données publiques." },
+  { title: "Pipeline de deal flow", text: "Suivez chaque cible de « à qualifier » à « NDA signé », annotez, exportez vers Excel ou votre CRM." },
 ];
 
-function ToolCard({ name, output }: { name: string; output: unknown }) {
+const STEPS = [
+  ["1", "Décrivez le mandat", "Secteur, zone, taille, CA."],
+  ["2", "Sourcia classe les cibles", "Les PME les plus susceptibles de céder remontent en tête."],
+  ["3", "Approchez au bon moment", "Fiche, email, suivi dans le pipeline."],
+];
+
+export default function Landing() {
   return (
-    <details className="my-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <summary className="cursor-pointer font-mono text-zinc-600 dark:text-zinc-400">🛠 {name}</summary>
-      <pre className="mt-2 overflow-x-auto text-xs">{JSON.stringify(output, null, 2)}</pre>
-    </details>
-  );
-}
-
-export default function Home() {
-  const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat();
-  const busy = status === "submitted" || status === "streaming";
-
-  const send = (text: string) => {
-    if (!text.trim() || busy) return;
-    sendMessage({ text });
-    setInput("");
-  };
-
-  return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-10">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Hackathon Copilot</h1>
-        <p className="text-sm text-zinc-500">Scope the idea, plan the sprint, nail the pitch.</p>
+    <div className="flex flex-1 flex-col bg-white dark:bg-zinc-950">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5">
+        <span className="font-semibold tracking-tight">Sourc<span className="text-indigo-600 dark:text-indigo-400">ia</span></span>
+        <Link href="/app" className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900">
+          Ouvrir l&apos;application
+        </Link>
       </header>
 
-      <section className="flex-1 space-y-6">
-        {messages.length === 0 && (
-          <div className="grid gap-2">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => send(s)}
-                className="rounded-lg border border-zinc-200 px-4 py-3 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-              >
-                {s}
-              </button>
+      <main className="flex-1">
+        <section className="mx-auto max-w-4xl px-4 pb-20 pt-16 text-center sm:pt-24">
+          <p className="mb-4 text-sm font-medium text-indigo-600 dark:text-indigo-400">Pour boutiques M&A, fonds small-cap et corporate development</p>
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+            Trouvez les PME à céder <br className="hidden sm:block" />avant qu&apos;elles ne soient sur le marché.
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
+            Sourcia croise le registre national des entreprises avec des signaux de transmission pour classer vos cibles et préparer l&apos;approche.
+          </p>
+          <div className="mt-8 flex justify-center gap-3">
+            <Link href="/app" className="rounded-md bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700">Lancer un sourcing</Link>
+            <a href="#how" className="rounded-md border border-zinc-300 px-5 py-3 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">Voir le fonctionnement</a>
+          </div>
+        </section>
+
+        <section className="border-y border-zinc-200 bg-zinc-50 py-16 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4">
+            {FEATURES.map((f) => (
+              <div key={f.title}>
+                <h2 className="font-medium">{f.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{f.text}</p>
+              </div>
             ))}
           </div>
-        )}
+        </section>
 
-        {messages.map((m) => (
-          <article key={m.id} className={m.role === "user" ? "text-right" : ""}>
-            <span className="text-xs uppercase tracking-wide text-zinc-400">{m.role === "user" ? "You" : "Copilot"}</span>
-            {m.parts.map((part, i) => {
-              if (part.type === "text") {
-                return (
-                  <p key={i} className="whitespace-pre-wrap leading-relaxed">
-                    {part.text}
-                  </p>
-                );
-              }
-              if (part.type.startsWith("tool-") && "output" in part && part.output !== undefined) {
-                return <ToolCard key={i} name={part.type.slice(5)} output={part.output} />;
-              }
-              return null;
-            })}
-          </article>
-        ))}
-        {busy && <p className="text-sm text-zinc-400">Thinking…</p>}
-      </section>
+        <section id="how" className="mx-auto max-w-4xl px-4 py-20">
+          <h2 className="text-center text-2xl font-semibold tracking-tight">Trois étapes</h2>
+          <ol className="mt-10 grid gap-6 sm:grid-cols-3">
+            {STEPS.map(([n, t, d]) => (
+              <li key={n} className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">
+                <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{n}</span>
+                <h3 className="mt-2 font-medium">{t}</h3>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </main>
 
-      <form
-        className="sticky bottom-4 mt-8 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          send(input);
-        }}
-      >
-        <label htmlFor="prompt" className="sr-only">Message</label>
-        <input
-          id="prompt"
-          value={input}
-          onChange={(e) => setInput(e.currentTarget.value)}
-          placeholder="Describe your idea…"
-          className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 shadow-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-950"
-        />
-        <button
-          disabled={busy}
-          className="rounded-lg bg-zinc-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-zinc-900"
-        >
-          Send message
-        </button>
-      </form>
-    </main>
+      <footer className="border-t border-zinc-200 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-800">
+        Données publiques INSEE / RNE via recherche-entreprises.api.gouv.fr. Les oppositions à la prospection commerciale sont respectées.
+      </footer>
+    </div>
   );
 }

@@ -13,14 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hackathon Copilot",
-  description: "AI mentor to scope, plan and pitch your hackathon project",
+  title: "Sourcia — Sourcing M&A par IA",
+  description: "Identifiez les PME françaises les plus susceptibles d’être cédées, avant vos concurrents.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
