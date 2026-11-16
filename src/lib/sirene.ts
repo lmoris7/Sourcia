@@ -53,7 +53,7 @@ export function buildQuery(f: SearchFilters, page = 1): URLSearchParams {
 }
 
 /** Fetch several pages in parallel so ranking happens over a wider pool. */
-export async function searchCompanies(f: SearchFilters, pages = 3): Promise<{ total: number; companies: Company[] }> {
+export async function searchCompanies(f: SearchFilters, pages = 4): Promise<{ total: number; companies: Company[] }> {
   const responses = await Promise.all(
     Array.from({ length: pages }, (_, i) =>
       fetch(`${API_URL}?${buildQuery(f, i + 1)}`, { headers: { accept: "application/json" } }).then(async (r) => {
@@ -69,7 +69,10 @@ export async function searchCompanies(f: SearchFilters, pages = 3): Promise<{ to
     for (const raw of res.results ?? []) {
       if (seen.has(raw.siren)) continue;
       seen.add(raw.siren);
-      companies.push(mapCompany(raw));
+      const company = mapCompany(raw);
+      // The API matches any establishment in the area; M&A theses are about where the HQ is.
+      if (f.departements?.length && company.departement && !f.departements.includes(company.departement)) continue;
+      companies.push(company);
     }
   }
   return { total: responses[0]?.total_results ?? 0, companies };

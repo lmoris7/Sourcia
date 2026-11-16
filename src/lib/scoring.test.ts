@@ -79,3 +79,32 @@ describe("sirene mapping", () => {
     expect(p.get("etat_administratif")).toBe("A");
   });
 });
+
+import { templateBrief } from "./brief";
+
+describe("templateBrief", () => {
+  it("produces a usable brief without any LLM", () => {
+    const md = templateBrief(scoreCompany(base, NOW));
+    expect(md).toContain("Fiche cible — ACME");
+    expect(md).toContain("Email d'approche");
+  });
+});
+
+import { searchCompanies } from "./sirene";
+import { vi } from "vitest";
+
+describe("searchCompanies", () => {
+  it("keeps only companies headquartered in the requested départements and dedupes pages", async () => {
+    const page = {
+      total_results: 2,
+      results: [
+        { siren: "1", nom_complet: "LYON CO", siege: { departement: "69" } },
+        { siren: "2", nom_complet: "PARIS CO", siege: { departement: "75" } },
+      ],
+    };
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify(page))));
+    const { companies } = await searchCompanies({ departements: ["69"] }, 2);
+    expect(companies.map((c) => c.nom)).toEqual(["LYON CO"]);
+    vi.unstubAllGlobals();
+  });
+});
